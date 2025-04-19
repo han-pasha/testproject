@@ -70,6 +70,5 @@ Key dependencies include:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo-url.git
-cd your-repo-folder
+git clone https://github.com/han-pasha/testproject.git
 
