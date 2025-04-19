@@ -1,0 +1,44 @@
+server:
+  port: 9000
+  max-http-header-size: 32KB
+
+spring:
+  datasource:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:testdb;
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+#    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+  jersey:
+    application-path: /api/mobile
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG                 # Log SQL statements
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+javax:
+  faces:
+    PROJECT_STAGE: Development

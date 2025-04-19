@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:head>
+    <title>Product Management</title>
+    <!-- jQuery from CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"></link>
+
+    <script>
+        $(document).ready(function(){
+            // Toggle the Add/Edit form panel when clicking the toggle button.
+            $("#toggleForm").click(function () {
+                $("#productFormPanel").fadeToggle(200);
+            });
+            // Use delegated event for delete confirmation.
+            $(document).on('click', '.delete-btn', function(event) {
+                event.preventDefault();
+                var form = $(this).closest("form");
+                if (confirm("Are you sure you want to delete this product?")) {
+                    form.submit();
+                }
+            });
+        });
+    </script>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        /* Fixed container for the product table to keep form and buttons consistent */
+        .table-container {
+            background: #fff;
+            min-height: 600px; /* Fixed height to stabilize layout */
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative; /* Ensures pagination stays inside */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #2980b9;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Pagination controls fixed at the bottom */
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+        }
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #333;
+        }
+        .pagination a.active {
+            background-color: #2980b9;
+            color: #fff;
+            border-color: #2980b9;
+        }
+
+        /* Button Styling */
+        h\\:commandButton, .h-commandButton, button {
+            cursor: pointer;
+            background-color: #3498db;
+            border: 1px solid #2980b9;
+            color: #fff;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        h\\:commandButton:hover, .h-commandButton:hover, button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Form Panel Styling */
+        #productFormPanel {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 500px;
+            margin: 20px auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        /* Banner Header in the Form Panel */
+        .form-banner {
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Input Styling */
+        input[type="text"], input[type="hidden"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Messages Styling */
+        .messages {
+            color: red;
+            margin-bottom: 15px;
+        }
+
+        /* Action Buttons Container: reserves space for two buttons */
+        .action-buttons {
+            width: 260px;       /* Adjust this fixed width as needed */
+            margin: 0 auto;     /* Center the container */
+            display: flex;
+            justify-content: space-between;
+        }
+        /* When only one button is present, center it */
+        .action-buttons :only-child {
+            margin: 0 auto;
+        }
+
+        /* Unified Button Styling */
+        button, input[type="submit"], .ui-button, .h-commandButton, h\\:commandButton {
+            cursor: pointer;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        button:hover, input[type="submit"]:hover, .h-commandButton:hover, h\\:commandButton:hover {
+            background: linear-gradient(to right, #2980b9, #1c6690);
+            transform: scale(1.03);
+        }
+
+        /* Input Field Enhancements */
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52,152,219,0.5);
+            outline: none;
+        }
+
+        /* Smooth Form Panel Toggle */
+        #productFormPanel {
+            display: none;
+            animation: fadeInSlide 0.3s ease-in-out;
+        }
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Toggle Button UI */
+        #toggleForm {
+            display: block;
+            margin: 0 auto;
+            background: #2ecc71;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 10px 25px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        #toggleForm:hover {
+            background: #27ae60;
+            transform: scale(1.03);
+        }
+
+        /* Table Row Hover Accent */
+        tr:hover {
+            background-color: #eef6fc;
+        }
+
+        /* Error Message Look */
+        .messages, .error-message, h\\:message {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* Add subtle shadow and spacing around form panel */
+        #productFormPanel {
+            margin-top: 20px;
+            padding: 25px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .logout-button {
+          background-color: #ef4444;
+          color: white;
+          border: none;
+          padding: 0.6rem 1.2rem;
+          font-size: 0.95rem;
+          font-weight: bold;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logout-button:hover {
+          background-color: #dc2626;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .logout-button:focus {
+          outline: none;
+        }
+    </style>
+</h:head>
+<h:body>
+    <h1>Product Management</h1>
+    <!-- Logout Button in Header -->
+    <h:form>
+        <h:commandButton value="Logout"
+                         action="#{logoutScope.logout}"
+                         styleClass="logout-button" />
+    </h:form>
+    <!-- Product List Form -->
+    <div class="table-container">
+        <h:form id="productListForm">
+            <!-- CSRF hidden token; needed for delete action -->
+            <input type="hidden" name="#{requestScope._csrf.parameterName}"
+                   value="#{requestScope._csrf.token}" />
+            <h:dataTable value="#{productScope.paginatedProducts}" var="product" id="productTable">
+                <h:column>
+                    <f:facet name="header">ID</f:facet>
+                    #{product.id}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Name</f:facet>
+                    #{product.name}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Price</f:facet>
+                    #{product.price}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Actions</f:facet>
+                    <!-- Edit button to load product for editing -->
+                    <h:commandButton value="Edit" action="#{productScope.editProduct(product)}">
+                        <f:ajax render=":productListForm :productFormPanel" />
+                    </h:commandButton>
+                    <!-- Delete button with delete-btn class -->
+                    <h:commandButton value="Delete" action="#{productScope.deleteProduct(product.id)}" styleClass="delete-btn">
+                        <f:ajax render=":productListForm" />
+                    </h:commandButton>
+                </h:column>
+            </h:dataTable>
+
+            <!-- Pagination Controls Fixed at Bottom -->
+            <div class="pagination">
+                <h:commandLink value="Previous" action="#{productScope.previousPage}">
+                    <f:ajax render=":productListForm" />
+                </h:commandLink>
+                <span>Page #{productScope.page} of #{productScope.totalPages}</span>
+                <h:commandLink value="Next" action="#{productScope.nextPage}">
+                    <f:ajax render=":productListForm" />
+                </h:commandLink>
+            </div>
+        </h:form>
+    </div>
+
+    <!-- Button to toggle the Add/Edit form -->
+    <h:commandButton id="toggleForm" value="Toggle Add/Edit Product Form" type="button" />
+
+    <br/><br/>
+    <!-- Add/Edit Product Form Panel -->
+    <h:panelGroup id="productFormPanel" layout="block" style="#{productScope.formVisible ? 'display:block;' : 'display:none;'}">
+        <h:form id="productForm">
+            <!-- CSRF token -->
+            <input type="hidden"
+                   name="#{requestScope._csrf.parameterName}"
+                   value="#{requestScope._csrf.token}" />
+            <h:messages styleClass="messages" globalOnly="true" />
+            <!-- Banner indicating mode -->
+            <h:outputText value="#{empty productScope.selectedProduct.id ? 'Adding New Product' : 'Editing Product'}" styleClass="form-banner" />
+            <h:panelGrid columns="2" cellpadding="5">
+                <h:outputLabel for="pname" value="Name:" />
+                <!-- Add Length Validation for Name -->
+                <h:inputText id="pname" value="#{productScope.selectedProduct.name}" required="true">
+                    <f:validateLength minimum="3" maximum="50" />
+                </h:inputText>
+                <h:message for="pname" style="color:red" />
+
+                <h:outputLabel for="pprice" value="Price:" />
+                <!-- Add Regex Validation for Price: digits with optional decimal (1 or 2 decimals) -->
+                <h:inputText id="pprice" value="#{productScope.selectedProduct.price}" required="true">
+                    <f:validateRegex pattern="^\d+(\.\d{1,2})?$" />
+                </h:inputText>
+                <h:message for="pprice" style="color:red" />
+            </h:panelGrid>
+            <br/>
+            <!-- Action Buttons Container (reserves space for two buttons) -->
+            <div class="action-buttons">
+                <!-- "Add" button (rendered in Add mode) -->
+                <h:commandButton id="addButton" value="Add" action="#{productScope.addProduct}"
+                                 rendered="#{empty productScope.selectedProduct.id}">
+                    <f:ajax execute="@form" render=":productListForm :productFormPanel" />
+                </h:commandButton>
+                <!-- "Update" button (rendered in Edit mode) -->
+                <h:commandButton id="updateButton" value="Update" action="#{productScope.updateProduct}"
+                                 rendered="#{not empty productScope.selectedProduct.id}">
+                    <f:ajax execute="@form" render=":productListForm :productFormPanel" />
+                </h:commandButton>
+            </div>
+        </h:form>
+    </h:panelGroup>
+</h:body>
+</html>
